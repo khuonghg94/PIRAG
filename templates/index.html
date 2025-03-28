@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {box-sizing: border-box;}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.header {
+  overflow: hidden;
+  background-color: #f1f1f1;
+  padding: 20px 10px;
+}
+
+.header a {
+  float: left;
+  color: black;
+  text-align: center;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  line-height: 25px;
+  line-width: 60px;
+  border-radius: 6px;
+}
+
+.header a.logo {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.header a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.header a.active {
+  background-color: dodgerblue;
+  color: white;
+}
+
+.header-right {
+  float: right;
+}
+
+#onezone {
+  display: block;
+  vertical-align: top;
+}
+
+@media screen and (max-width: 500px) {
+  .header a {
+    float: none;
+    display: block;
+    text-align: left;
+  }
+
+  .header-right {
+    float: none;
+  }
+
+  #onezone {
+    display: block;
+    vertical-align: top;
+  }
+}
+</style>
+</head>
+<body>
+<div class="header">
+  <a href="#default" class="logo">
+    <img class="logo" src="static/logo_01.png" width="240px" height="105px">
+  </a>
+  <a href="#default" class="logo">
+    <img class="logo" src="static/logo_02.jpg" width="120px" height="120px">
+  </a>
+  <a href="#default" class="logo">
+    <img class="logo" src="static/logo_03.png" width="240px" height="105px">
+  </a>
+  <a href="#default" class="logo">
+    <img class="logo" src="static/logo_04.png" width="170px" height="130px">
+  </a>
+  <div class="header-right">
+    <a id="1zone" class="active" href="#" onclick="toggle1Zone()">Draw 1 Zone</a>
+    <a id="mzone" href="#" onclick="toggleMZone()">Draw Multi Zones</a>
+  </div>
+</div>
+
+<div style="padding-left:20px">
+  <h1>PIRAG: FROM PIPELINE INSPECTION REPORT TO ANOMALY GRAPH</h1>
+  <div class="loader"></div>
+  <div id="onezone">
+    <form method="POST" action="" enctype="multipart/form-data">
+        <label>Choose a language for processing: </label>
+        <select name="language" id="language">
+          <option value="French">French</option>
+          <option value="English">English</option>
+          <option value="Vietnamese">Vietnamese</option>
+          <option value="Chinese">Chinese</option>
+        </select> <br><br>
+        <label><b>Keywords for filter: </b></label>
+        <br><br><label>- Fixed Keywords: </label><input type="text" readonly style="width: 500px;" id="fixedKeywords" name="Fixed-Filter-Keywords" value="'PHOTO' 'DISTANCE' 'OBSERVATIONS'"> <br><br>
+        <label>- Add keywords for filter pages: </label>
+        <input type="text" style="width: 100px;" id="textAdd" name="textAdd">
+        <button type="button" id="addText" name="Add Text" onclick="add_text_filter()">Add Text</button>
+        <label>Keywords from user: </label><input type="text" readonly style="width: 320px;" id="filterKeywords" name="Filter-Keywords">
+        <button type="button" id="clearText" name="Clear Text" onclick="clear_text_filter()">Clear</button><br><br>
+        <label><b>Keywords for extraction: </b></label>
+        <br><br><label>- Fixed Keywords: </label><input type="text" readonly style="width: 500px;" id="extractKeywords" name="Fixed-Extracted-Keywords" value="'PHOTO' 'DISTANCE' 'OBSERVATIONS' 'From' 'To' 'Inspected Length'"> <br><br>
+        <label>- Add keywords for extracting information: </label>
+        <input type="text" style="width: 100px;" id="textExtAdd" name="textExtAdd">
+        <button type="button" id="addTextExt" name="Add Text" onclick="add_text_extract()">Add Text</button>
+        <label>Keywords from user: </label><input type="text" readonly style="width: 250px;" id="extKeywords" name="Extracted-Keywords">
+        <button type="button" id="clearTextExt" name="Clear Text" onclick="clear_text_extract()">Clear</button><br><br>
+        <label>Select a PDF file of a zone: </label><br><br>
+        <input type="file" name="file" value="Choose File"/>
+        <input type = "submit" value="Upload">
+        <label id="notify">{{NOTIFY}}</label>
+    </form>
+    <br>
+    <label>Choose Action: </label><br><br>
+    <button onclick="clickDownload()">Download JSON File</button>
+    <button id="drawone" name="Draw Graph" onclick="load_graph_simple()">Draw Graph</button>
+    <input type="checkbox" id="simpleG" name="simpleG" onchange="load_graph_simple()" checked/>
+    <label for="simpleG">Simple Graph</label>
+    <input type="checkbox" id="fullG" name="fullG" onchange="load_graph()"/>
+    <label for="fullG">Full Graph</label>
+  </div>
+  <div id="content"></div>
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script language="JavaScript">
+    function toggle1Zone() {
+        document.getElementById("1zone").href="{{url_for('index')}}";
+        document.getElementById("1zone").classList.add('active');
+    }
+    function toggleMZone() {
+        document.getElementById("mzone").href="{{url_for('multizone')}}";
+        document.getElementById("mzone").classList.add('active');
+    }
+    function clickDownload() {
+        url = 'http://127.0.0.1:5000/uploads/' + '{{jsonFile}}'
+        console.log(url)
+        var link = document.createElement('a');
+        link.setAttribute('download', url);
+
+        // Set the link's href attribute to the temporary URL
+        link.href = url;
+
+        // Simulate a click on the link to trigger the download
+        document.body.appendChild(link);
+        link.click();
+    }
+    function load_graph(){
+      document.getElementById("simpleG").checked = false;
+      url = 'http://127.0.0.1:5000/uploads/' + '{{plotPath}}'
+      $(document).ready(function(){
+         $('#content').load(url);
+      });
+    }
+    function load_graph_simple(){
+      document.getElementById("fullG").checked = false;
+      url = 'http://127.0.0.1:5000/uploads/' + '{{plotPathSimple}}'
+      $(document).ready(function(){
+         $('#content').load(url);
+      });
+    }
+    function add_text_filter() {
+        var input = document.getElementById('textAdd');
+        document.getElementById('filterKeywords').value = document.getElementById('filterKeywords').value + "'" + input.value + "' ";
+        input.value="";
+    }
+    function clear_text_filter(){
+        document.getElementById('filterKeywords').value = "";
+    }
+    function add_text_extract() {
+        var input = document.getElementById('textExtAdd');
+        document.getElementById('extKeywords').value = document.getElementById('extKeywords').value + " '" + input.value + "'";
+        input.value="";
+    }
+    function clear_text_extract(){
+        document.getElementById('extKeywords').value = "";
+    }
+</script>
+</body>
+</html>
