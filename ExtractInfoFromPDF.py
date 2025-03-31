@@ -194,7 +194,7 @@ def ProcessPDF(folder_process, uploadsFolder, filename, list_choose_pages, langu
     result = "{\"result\": []}"
     json_data = json.loads(result)
 
-    for i in range(len(filter_pages_pymu)):
+    if len(filter_pages_pymu) >= len(filter_pages_pdf2):
         final_length = len(filter_pages_pymu)
     else:
         final_length = len(filter_pages_pdf2)
