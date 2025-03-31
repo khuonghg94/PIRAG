@@ -195,6 +195,11 @@ def ProcessPDF(folder_process, uploadsFolder, filename, list_choose_pages, langu
     json_data = json.loads(result)
 
     for i in range(len(filter_pages_pymu)):
+        final_length = len(filter_pages_pymu)
+    else:
+        final_length = len(filter_pages_pdf2)
+    for i in range(final_length):
+        print("Processing..." + str(i+1) + "/" + str(len(filter_pages_pymu)))
         result_text_en = get_chatgpt_response_trans_text(filter_pages_pymu[i] + ' ' + filter_pages_pdf2[i], prompt_text_en)
         result = get_chatgpt_response_info(result_text_en, prompt)
         json_data_kq = json.loads(result)

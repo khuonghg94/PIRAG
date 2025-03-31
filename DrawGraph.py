@@ -91,8 +91,11 @@ def DrawGraph(folder_process, uploadsFolder, fileJsonPath, list_keys, isFull):
             else:
                 current_node = from_node
                 for i in range(0, len(segment["Problems"])):
-                    node_name = segment[list_general[0]] + "-" + segment[list_general[1]] + "_" + ''.join(
-                        [char for char in segment["Problems"][i][list_observations[0]] if char.isdigit()])
+                    final_str_number = "NA"
+                    res_number = [int(i) for i in segment["Problems"][i][list_observations[0]].split() if i.isdigit()]
+                    if len(res_number) != 0:
+                        final_str_number = ''.join(str(x) for x in res_number)
+                    node_name = segment[list_general[0]] + "-" + segment[list_general[1]] + "_" + final_str_number
                     node_details[node_name] = {
                         list_observations[k]: segment["Problems"][i][list_observations[k]]
                         for k in range(0, len(list_observations))
