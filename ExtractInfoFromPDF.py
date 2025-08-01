@@ -242,5 +242,5 @@ def ProcessPDF(folder_process, uploadsFolder, filename, list_choose_pages, langu
         group["Problems"].append(problem)
     jsonFile = folder_process + '_finalInfo.json'
     with open(uploadsFolder + "\\" + jsonFile, 'w') as f:
-        f.write(json.dumps(grouped_result, ensure_ascii=False, indent=4))
+        f.write(json.dumps(grouped_result, ensure_ascii=True, indent=4))
     return jsonFile, new_list_keywords_translate_en
