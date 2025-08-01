@@ -10,14 +10,17 @@ from PyPDF2 import PdfReader
 
 openai.api_key = 'sk-APIKey'
 
+# List exception keywords: These keywords are used for skipping pages that included general information 
 list_exception = ["SYNTHESE", "GENERALES", "Synthèse"]
 
+# Function: Get number pages of PDF file
 def GetNumberPages(pdf_path):
     for file in glob(pdf_path):
         with open(file, 'rb') as pdf:
             doc = PDFDocument(pdf)
             return len(list(doc.pages()))
 
+# Function: Extract raw text with library PyPDF2
 def ProcessPDF2(pdf_path):
     reader = PdfReader(pdf_path)
     number_of_pages = len(reader.pages)
@@ -28,7 +31,7 @@ def ProcessPDF2(pdf_path):
       textList.append(text)
     return textList
 
-
+# Function: Extract raw text with library PyMUPDF4LLM
 def ProcessPDFPyMu(pdf_path, pages):
     textList = []
     for i in range(pages):
@@ -36,6 +39,10 @@ def ProcessPDFPyMu(pdf_path, pages):
       textList.append(md_text_pages)
     return textList
 
+# Function: Using ChatGPT API to get responses with prompt (without input text)
+# Notes: This function is used for 2 tasks:
+# 1. Translation keywords multiple languages
+# 2. Find synonyms of keywords for variety
 def get_chatgpt_response_trans(prompt):
     retry_attempts = 5
     for attempt in range(retry_attempts):
@@ -56,12 +63,14 @@ def get_chatgpt_response_trans(prompt):
             return response.choices[0].message['content']
         except OpenAIError as e:
             if attempt < retry_attempts - 1:
-                wait_time = 2 ** attempt  # Chậm lại theo cấp số nhân
-                print(f"Vượt quá giới hạn tốc độ. Đang thử lại sau {wait_time} giây...")
+                wait_time = 2 ** attempt  
+                print(f"Over speed processing {wait_time} seconds...")
                 time.sleep(wait_time)
             else:
                 raise e
 
+# Function: Using ChatGPT API to get responses with prompt (without input text)
+# Notes: This function is used for translation text data in multiple languages (text data is raw text from extracting by OCR (with library PyPDF2 and PyMUPDF4LLM))
 def get_chatgpt_response_trans_text(text_data, prompt):
     retry_attempts = 5
     for attempt in range(retry_attempts):
@@ -86,12 +95,17 @@ def get_chatgpt_response_trans_text(text_data, prompt):
             return response.choices[0].message['content']
         except OpenAIError as e:
             if attempt < retry_attempts - 1:
-                wait_time = 2 ** attempt  # Chậm lại theo cấp số nhân
-                print(f"Vượt quá giới hạn tốc độ. Đang thử lại sau {wait_time} giây...")
+                wait_time = 2 ** attempt
+                print(f"Over speed processing {wait_time} seconds...")
                 time.sleep(wait_time)
             else:
                 raise e
 
+
+# Function: Using ChatGPT API to get responses with prompt and text data
+# Note: 
+# 1. text data is raw text from extracting by OCR (with library PyPDF2 and PyMUPDF4LLM)
+# 2. response: extracted information with keywords (in format json)
 def get_chatgpt_response_info(text_data, prompt):
     retry_attempts = 5
     for attempt in range(retry_attempts):
@@ -116,12 +130,13 @@ def get_chatgpt_response_info(text_data, prompt):
             return response.choices[0].message['content']
         except OpenAIError as e:
             if attempt < retry_attempts - 1:
-                wait_time = 2 ** attempt  # Chậm lại theo cấp số nhân
-                print(f"Vượt quá giới hạn tốc độ. Đang thử lại sau {wait_time} giây...")
+                wait_time = 2 ** attempt 
+                print(f"Over speed processing {wait_time} seconds...")
                 time.sleep(wait_time)
             else:
                 raise e
 
+# Function: General function for processing PDF files with step by step
 def ProcessPDF(folder_process, uploadsFolder, filename, list_choose_pages, language, list_keywords):
     print(list_keywords)
     pdf_path = uploadsFolder + filename
@@ -141,7 +156,7 @@ def ProcessPDF(folder_process, uploadsFolder, filename, list_choose_pages, langu
     textRes_pymu = ProcessPDFPyMu(pdf_path, numPages)
     textRes_pdf2 = ProcessPDF2(pdf_path)
 
-    # Trich xuat thong tin voi LLM
+    # Extracting information
 
     # Filter Page
     result = get_chatgpt_response_trans(prompt_trans)

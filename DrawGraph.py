@@ -5,6 +5,7 @@ import plotly.graph_objects as go
 
 DEFAULT_WEIGHT = 3
 
+# Function: Merging json files for multiple regions
 def merge_json_files(file_paths):
     merged_data = []
     for path in file_paths:
@@ -17,7 +18,7 @@ def merge_json_files(file_paths):
     new_dict = {"result": finalList}
     return new_dict
 
-
+# Function: Set attribute "Distance" for the edges of Anomaly Graph
 def SetWeight(node_details, current_node, node_name, list_observations):
     findings_current = re.findall(r'\d+\.\d+|\d+', node_details[current_node][list_observations[1]])
     if (len(findings_current) > 0):
@@ -34,6 +35,7 @@ def SetWeight(node_details, current_node, node_name, list_observations):
       weight = DEFAULT_WEIGHT
     return weight
 
+# Function: Set attribute "Distance" for the edges of Manhole Graph
 def SetWeightManhole(node_details, node_name, list_general):
     findings = re.findall(r"[-+]?\d*\.*\d+", node_details[node_name][list_general[2]])
     if (len(findings) > 0):
@@ -45,18 +47,20 @@ def SetWeightManhole(node_details, node_name, list_general):
       weight = DEFAULT_WEIGHT
     return weight
 
+# Function: Draw Anomaly or Manhole Graph based on isFull (True: Draw anomaly graph; False: Draw manhole graph)
+# Note: list_keys are list of keywords that people want to extract information from report files.
 def DrawGraph(folder_process, uploadsFolder, fileJsonPath, list_keys, isFull):
     list_observations = list_keys[0:3]
     list_general = list_keys[3:]
     # Load the JSON file
     with open(fileJsonPath, 'r') as file:
         data = json.load(file)
-    # Tạo đồ thị
+    # Create Graph
     G = nx.DiGraph()
 
     node_details = {}
 
-    # Thêm nút và cạnh vào đồ thị
+    # Add Nodes and Edges into Graph
     for segment in data['result']:
         from_node = segment[list_general[0]]
         to_node = segment[list_general[1]]
@@ -250,17 +254,19 @@ def DrawGraph(folder_process, uploadsFolder, fileJsonPath, list_keys, isFull):
     return plotFile
 
 
+# Function: Draw Manhole or Anomaly Graph for multiple regions based on isFull (True: Draw anomaly graph; False: Draw manhole graph)
+# Notes: fileJsonPath includes list of jsonFile (with each jsonFile is used for storing data of graph in per region)
 def DrawMultiGraph(uploadsFolder, fileJsonPath, isFull):
     data = merge_json_files(fileJsonPath)
     list_keys = list(data['result'][0]['Problems'][0].keys())[0:3] + list(data['result'][0].keys())[0:2] + list(data['result'][0]['Problems'][0].keys())[3:]
     list_observations = list_keys[0:3]
     list_general = list_keys[3:]
-    # Tạo đồ thị
+    # Create Graph
     G = nx.DiGraph()
 
     node_details = {}
 
-    # Thêm nút và cạnh vào đồ thị
+    # Add Nodes and Edges into Graph
     for segment in data['result']:
         from_node = segment[list_general[0]]
         to_node = segment[list_general[1]]
